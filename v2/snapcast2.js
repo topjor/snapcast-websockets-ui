@@ -13,33 +13,30 @@ $(document).ready(function() {
         var recv = String.fromCharCode.apply(null, new Uint8Array(e.data));
         // parse json
         var answer = JSON.parse(recv);
-        console.log(answer);
         if (answer.id == 1) {
             serverUpdate(answer.result);
         }
-        // client updates
-        if (answer.method == "Client.OnVolumeChanged" || answer.method == "Client.OnLatencyChanged") {
-            updateClientMute(answer.params);
-            updateClientVolume(answer.params);
-        } else if (answer.method == "Client.OnNameChanged") {
-            updateClientName(answer.params);
-        }
-        if (answer.method == "Client.OnConnect") {
-            clientConnect(answer.params);
-        } else if(answer.method == "Client.OnDisconnect") {
-            clientDisconnect(answer.params);
-        }
-        if (answer.method == "Group.OnMute") {
-            updateGroupMute(answer.params);
-        }
-        if (answer.method == "Group.OnStreamChanged") {
-            updateGroupStream(answer.params);
-        }
-        if (answer.method == "Stream.OnUpdate") {
-            streamUpdate(answer.params);
-        }
-        if (answer.method == "Server.OnUpdate") {
-            server = answer.params;
+        switch (answer.method) {
+            case "Client.OnConnect":
+                clientConnect(answer.params);
+            case "Client.OnDisconnect":
+                clientDisconnect(answer.params);
+            case "Client.OnVolumeChanged":
+                updateClientMute(answer.params);
+                updateClientVolume(answer.params);
+                break;
+            case "Client.OnLatencyChanged":
+                updateClientLatency(answer.params);
+                break;
+            case "Client.OnNameChanged":
+                updateClientName(answer.params);
+
+            case "Group.OnMute":
+                updateGroupMute(answer.params);
+            case "Group.OnStreamChanged":
+                updateGroupStream(answer.params);
+            default:
+                console.log("Unhandled method: "+answer.method);
         }
     };
 

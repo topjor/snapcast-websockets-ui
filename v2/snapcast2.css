@@ -1,0 +1,8 @@
+.ui.dimmer {
+    background-color: #272b30 !important;
+    opacity: 0.8 !important;
+}
+
+i.icon.edit.outline::before {
+    content: "\f044" !important;
+}

@@ -1,5 +1,6 @@
 var streams = [];
 var connection;
+var msglog = [];
 
 $(document).ready(function() {
     // open connection
@@ -11,8 +12,13 @@ $(document).ready(function() {
     window.connection.onmessage = function(e) {
         // get data
         var recv = String.fromCharCode.apply(null, new Uint8Array(e.data));
-        // parse json
-        var answer = JSON.parse(recv);
+
+        // decode message
+        answer = decodeMessage(recv);
+        if (answer == null) {
+            return;
+        }
+
         if (answer.id == 1) {
             serverUpdate(answer.result);
         }
@@ -51,6 +57,52 @@ $(document).ready(function() {
         alert("error");
     };
 });
+
+function decodeMessage(message) {
+    try {
+        // parse json
+        var answer = JSON.parse(message);
+
+    // catch json errors
+    } catch(err) {
+        // check if it is clasified as syntax error
+        if (err.name == "SyntaxError") {
+            // check if we already have message chunks in the queue
+            if (window.msglog.length == 0) {
+                // if not add the current chunk
+                window.msglog[window.msglog.length] = message;
+                // and return
+                return;
+            } else {
+                // add current chunk
+                window.msglog[window.msglog.length] = message;
+
+                // check if the chunks together form a message
+                // put the messages together
+                var msg = "";
+                for (var i = 0; i < window.msglog.length; i++) {
+                    msg += window.msglog[i];
+                }
+
+                // try and decode
+                try {
+                    var answer = JSON.parse(msg);
+                } catch (err) {
+                    // if not return null again
+                    return null;
+                }
+            }
+        } else {
+            // other errors????
+            return null;
+        }
+    }
+
+    // reset queue
+    window.msglog = [];
+    //return message
+    return answer;
+}
 
 // send function
 function send(str) {

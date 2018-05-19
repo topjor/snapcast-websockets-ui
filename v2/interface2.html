@@ -45,6 +45,7 @@
         </div>
     </div>
     <!-- popups -->
+    <!-- edit client name -->
     <div class="ui modal" id="clientEdit">
       <div class="ui header">Edit client name
           <div class="ui sub header">Unknown</div>
@@ -54,6 +55,24 @@
           <div class="field">
             <label>New client name</label>
             <input id="newClientName" type="text" />
+            <input id="clientId" type="hidden" />
+          </div>
+        </div>
+      </div>
+      <div class="actions">
+        <div class="ui approve green button">Approve</div>
+      </div>
+    </div>
+    <!-- edit client latency -->
+    <div class="ui modal" id="clientLatency">
+      <div class="ui header">Edit client latency
+          <div class="ui sub header">Unknown</div>
+      </div>
+      <div class="content">
+        <div class="ui form">
+          <div class="field">
+            <label>New client latency (in ms)</label>
+            <input id="newClientLatency" type="number" />
             <input id="clientId" type="hidden" />
           </div>
         </div>

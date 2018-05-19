@@ -4,7 +4,8 @@ var msglog = [];
 
 $(document).ready(function() {
     // open connection
-    window.connection = new WebSocket('ws://localhost:2705', 'binary');
+    // window.connection = new WebSocket('ws://localhost:2705', 'binary');
+    window.connection = new WebSocket('ws://192.168.10.31:2705', 'binary');
 
     window.connection.binaryType = 'arraybuffer';
 
@@ -32,6 +33,7 @@ $(document).ready(function() {
                 updateClientVolume(answer.params);
                 break;
             case "Client.OnLatencyChanged":
+                console.log(answer.params);
                 updateClientLatency(answer.params);
                 break;
             case "Client.OnNameChanged":
@@ -106,14 +108,15 @@ function decodeMessage(message) {
 
 // send function
 function send(str) {
+    console.log(str);
     var buf = new ArrayBuffer(str.length);
     var bufView = new Uint8Array(buf);
     for (var i = 0, strLen = str.length; i < strLen; i++) {
         bufView[i] = str.charCodeAt(i);
     }
-    //  console.log(buf);
+     // console.log(buf);
     var recv = String.fromCharCode.apply(null, new Uint8Array(buf));
-    //  console.log(recv);
+     // console.log(recv);
     window.connection.send(buf)
 
 }
@@ -126,7 +129,6 @@ function serverUpdate(params) {
 }
 
 function updateStreams(params) {
-    console.log(params);
     window.streams = params;
 }
 
@@ -205,7 +207,7 @@ function updateGroup(params) {
             // client name
             name = client.config.name;
             if (name == "") name = client.host.name;
-            html +=   "<div class=\"header\"><span id=\"clientName\">"+ name +"</span>&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"javascript:editClientName('"+ client.id +"', '"+ name +"');\"><i class=\"ui icon edit outline\"></i></a></div>";
+            html +=   "<div class=\"header\"><span id=\"clientName\">"+ name +"</span>&nbsp;&nbsp;&nbsp;&nbsp;<a id=\"editClientNameA\" href=\"javascript:editClientName('"+ client.id +"', '"+ name +"');\"><i class=\"ui icon edit outline\"></i></a></div>";
             // mute - volume - edit
             html +=   "<div class=\"description\">";
             // open client controlls
@@ -228,7 +230,7 @@ function updateGroup(params) {
             html +=       "<input id=\"clientid\" type=\"hidden\" value=\""+ client.id +"\" />";
 
             // edit button
-            html +=       "<a id=\"clientlatency\" href=\"javascript:editClientLatency('"+ client.id +"');\" class='ui basic circular icon button'><i class=\"ui icon cog \"></i></a>";
+            html +=       "<a id=\"clientlatency\" href=\"javascript:editClientLatency('"+ client.id +"', '"+ client.config.latency +"');\" class='ui basic circular icon button'><i class=\"ui icon cog \"></i></a>";
 
             // end of controlls
             html +=     "</div></div>";
@@ -286,8 +288,12 @@ function updateClientVolume(params) {
 // client name update
 function updateClientName(params) {
     $("#c_"+params.id.replace(/:/g, '-')).find("#clientName").html(params.name);
+    $("#c_"+params.id.replace(/:/g, '-')).find("#editClientNameA").attr("href", "javascript:editClientName('"+ params.id +"', '"+ params.name +"');");
 }
 
+function updateClientLatency(params) {
+    $("#c_"+params.id.replace(/:/g, '-')).find("#clientlatency").attr("href", "javascript:editClientLatency('"+ params.id +"', '"+ params.latency +"');");
+}
 
 
 // set group mute
@@ -327,10 +333,25 @@ function editClientName(client, clientName) {
           updateClientName({'id': clientId, 'name': newClientName});
       }
     });
-    $("#clientEdit").modal("show");
     $("#clientEdit").find(".sub.header").html(client);
     $("#clientEdit").find("#clientId").val(client);
     $("#clientEdit").find("#newClientName").val(clientName);
+    $("#clientEdit").modal("show");
+}
+// update dialog
+function editClientLatency(client, clientLatency) {
+    $("#clientLatency").modal({
+        onApprove: function() {
+          clientId = $("#clientLatency").find("#clientId").val();
+          newClientLatency = $("#clientLatency").find("#newClientLatency").val();
+          send('{"id":7,"jsonrpc":"2.0","method":"Client.SetLatency","params":{"id":"' + clientId + '","latency":' + newClientLatency + '}}}\n');
+          updateClientLatency({'id': clientId, 'latency': newClientLatency});
+      }
+    });
+    $("#clientLatency").find(".sub.header").html(client);
+    $("#clientLatency").find("#clientId").val(client);
+    $("#clientLatency").find("#newClientLatency").val(clientLatency);
+    $("#clientLatency").modal("show");
 }
 
 function clientDisconnect(client) {

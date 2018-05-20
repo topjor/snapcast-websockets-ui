@@ -29,3 +29,7 @@ Special thanks to [derglaus](https://github.com/derglaus) for his [snapcast-webs
 I forked this first but quickly started my own version, based on his javascript work,  
 the handeling of the websocket (send, receive and onmessage) is copied, the rest I reimplemented from his version.  
 (I updated the handling of split/chunked messages)
+
+
+## Screenshots
+![Screenshot](https://github.com/topjor/snapcast-websockets-ui/blob/master/v2/SnapCast_Manager.PNG?raw=true)
